@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class ToggleLight : MonoBehaviour
@@ -57,11 +58,23 @@ public class ToggleLight : MonoBehaviour
         canSwitchToDay = true; //test
     }
 
-    private void SwitchToDayView()
+    public void SwitchToDayView()
     {
         cam.LayerCullingHide(nightLayerMask);
         cam.LayerCullingShow(dayLayerMask);
         cam.backgroundColor = dayColor;
         canSwitchToDay = false; //test
+    }
+
+    public void SwitchToDayView(float timer)
+    {
+        SwitchToDayView();
+        StartCoroutine(TurnOff(timer));
+    }
+
+    IEnumerator TurnOff(float timer)
+    {
+        yield return new WaitForSeconds(timer);
+        SwitchToNightView();
     }
 }
