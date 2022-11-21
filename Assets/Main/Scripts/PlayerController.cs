@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    private BoxCollider2D player_boxCollider;
     private Rigidbody2D player_rb2D;
+    private Animator player_animator;
     private bool isDead;
     public bool IsDead { get { return isDead; } }
 
@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float speed;
     [SerializeField] private float jumpForce;
     [SerializeField] private float fallMultiplier;
+    [SerializeField] private Transform groundCheckPoint;
 
     [Header("LayerMask")]
     [SerializeField] private LayerMask groundLayerMask;
@@ -18,16 +19,19 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        player_boxCollider = GetComponent<BoxCollider2D>();
         player_rb2D = GetComponent<Rigidbody2D>();
+        player_animator = GetComponent<Animator>();
     }
 
 
     void Update()
     {
-        float moveValue = Input.GetAxisRaw("Horizontal");
+        if (isDead) return;
 
-        if(Input.GetKeyDown(KeyCode.Space) && IsGrounded())
+        float moveValue = Input.GetAxisRaw("Horizontal");
+        MovePlayer(moveValue);
+
+        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
         {
             Jump();
         }
@@ -36,14 +40,36 @@ public class PlayerController : MonoBehaviour
         {
             player_rb2D.velocity -= Vector2.down* Physics2D.gravity.y * fallMultiplier * Time.deltaTime;
         }
-
-        MovePlayer(moveValue);
     }
 
 
     private void MovePlayer(float direction)
     {
         player_rb2D.velocity = new Vector2(direction * speed , player_rb2D.velocity.y);
+        PlayMovementAnimation(direction);
+    }
+
+    private void PlayMovementAnimation(float xAxis)
+    {
+        player_animator.SetBool("jump",!IsGrounded());
+
+        if(IsGrounded())
+        {
+            player_animator.SetFloat("speed", Mathf.Abs(xAxis));
+        }
+
+        Vector3 scale = transform.localScale;
+
+        if (xAxis < 0)
+        {
+            scale.x = -1 * Mathf.Abs(scale.x);
+        }
+        else if (xAxis > 0)
+        {
+            scale.x = Mathf.Abs(scale.x);
+        }
+
+        transform.localScale = scale;
     }
 
     private void Jump()
@@ -53,8 +79,18 @@ public class PlayerController : MonoBehaviour
 
     private bool IsGrounded()
     {
-        RaycastHit2D raycastHit2D = Physics2D.BoxCast(player_boxCollider.bounds.center, player_boxCollider.bounds.size, 0f, Vector2.down,1f, groundLayerMask);
-        return raycastHit2D.collider != null;
+        Collider2D isGrounded = Physics2D.OverlapCircle(groundCheckPoint.position, 0.1f, groundLayerMask);
+        return isGrounded;
     }
 
+    public void Hurt(bool status)
+    {
+        player_animator.SetBool("hurt", status);
+    }
+
+    public void Dead()
+    {
+        isDead = true;
+        player_animator.SetBool("dead", true);
+    }
 }

@@ -41,13 +41,19 @@ public class ToggleLight : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.tag == "Player")
+        {
             SwitchToDayView();
+            collision.GetComponent<VampireEffect>().ActivateEffect(true);
+        }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
         if (collision.gameObject.tag == "Player")
+        {
             SwitchToNightView();
+            collision.GetComponent<VampireEffect>().ActivateEffect(false);
+        }
     }
 
     private void SwitchToNightView()
@@ -77,4 +83,5 @@ public class ToggleLight : MonoBehaviour
         yield return new WaitForSeconds(timer);
         SwitchToNightView();
     }
+
 }
