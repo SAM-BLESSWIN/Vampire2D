@@ -40,6 +40,7 @@ public class LevelPauseController : MonoBehaviour
 
     private void QuitLevel()
     {
+        Time.timeScale = 1f;
         SoundManager.Instance.Play(SoundTypes.BUTTONCLICK);
         SceneController.LoadScene(0);
     }
